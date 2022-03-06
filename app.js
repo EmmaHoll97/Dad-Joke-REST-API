@@ -10,6 +10,10 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
+app.get("/list", function(req, res){
+  res.redirect("/list");
+})
+
 app.route("/list")
   .get(function(req, res) {
     res.write("<table>");
