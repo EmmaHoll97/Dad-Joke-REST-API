@@ -86,7 +86,7 @@ app.route("/list/:index")
     res.status(200).send("Joke number " + index + " was deleted successfully!!");
   }) //delete one item
 
-app.listen(process.env.PORT, function(error){
+app.listen(function(error){
   if(error){
     console.log(error);
   }
