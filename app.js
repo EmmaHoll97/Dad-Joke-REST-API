@@ -10,7 +10,11 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
-app.route("/")
+app.get("/", function(req, res){
+  res.redirect("/list");
+})
+
+app.route("/list")
   .get(function(req, res) {
     res.write("<table>");
     for(var i = 0; i < jokeArray.length; i++){
@@ -24,15 +28,16 @@ app.route("/")
     res.end();
   }) //get whole list
   .post(function(req, res){
-    const joke = {
-      joke: req.body.joke,
-      punchLine: req.body.punchLine
+    try{
+      var jokeList = fs.readFileSync(__dirname + "/jokes.txt", "utf-8");
+      jokeList.push(req.body.joke + "<>" + req.body.punchLine);
+      const string = jokeList.join("\n");
+      fs.writeFileSync(__dirname + "/jokes.txt", string);
+      jokeArray = jokeList;
+      res.status(200).send("Joke was added successfully!!");
+    } catch {
+      res.status(400).send("Failed to add joke!");
     }
-    var jokeString = "\n" + joke.joke +"<>" + joke.punchLine;
-    var jokeList = fs.readFileSync(__dirname + "/jokes.txt", "utf-8");
-    jokeList = jokeList + jokeString;
-    fs.writeFileSync(__dirname + "/jokes.txt", jokeList);
-    res.status(200).send("Joke was added successfully!!");
   }) //add to the list
   .put() //not used
   .delete() //not used
@@ -58,15 +63,11 @@ app.route("/list/:index")
   .put(function(req, res) {
     try{
       const index = req.params.index -1;
-      const joke = {
-        joke: req.body.joke,
-        punchLine: req.body.punchLine
-      }
-      var jokeString =  joke.joke +"<>" + joke.punchLine;
       const array = jokeArray;
-      array[index] = jokeString;
+      array[index] = req.body.joke +"<>" + req.body.punchLine;
       const string = array.join("\n");
       fs.writeFileSync(__dirname + "/jokes.txt", string);
+      jokeArray = array;
       res.status(200).send("List was updated successfully!!");
     } catch {
       const count = jokeArray.length;
@@ -77,8 +78,9 @@ app.route("/list/:index")
     const index = req.params.index -1;
     const array = jokeArray;
     array.splice(index, 1);
-    const string = JSON.stringify(array);
+    const string = array.join("\n");
     fs.writeFileSync(__dirname + "/jokes.txt", string);
+    jokeArray = array;
     res.status(200).send("Joke number " + index + " was deleted successfully!!");
   }) //delete one item
 
